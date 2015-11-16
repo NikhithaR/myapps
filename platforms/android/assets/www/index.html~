@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>mp3 Player</title>
+<meta charset="utf-8" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="msapplication-tap-highlight" content="no" />
+<meta name="viewport"
+	content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+<link rel="stylesheet" type="text/css" href="css/index.css" />
+<script type="text/javascript" src="cordova.js"></script>
+
+<script type="text/javascript">
+    function onLoad() {
+       document.getElementById("div").style.background = "url('1.png') no-repeat center center ";
+    }    
+        
+   document.addEventListener("deviceready", onDeviceReady, false);
+
+   function onDeviceReady(){
+window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+	window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFileSystemSuccess, fail);
+   	//window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, onFileSystemSuccess, fail);
+   window.alert("Loading");
+}
+function onFileSystemSuccess(fileSystem) {
+console.log("0");
+console.log(Environment.getExternalStorageState());
+    fileSystem.root.getDirectory("/sdcard/", {create: false, exclusive: false}, onFileSystemSuccessUpload, fail);
+}
+
+function onFileSystemSuccessUpload(fileSystem) {
+      console.log("Success");
+console.log("root name=" + fileSystem.root.name)
+             var directoryReader = fileSystem.root.createReader();
+console.log("1");
+              directoryReader.readEntries(successReader,fail); 
+console.log("2");
+
+          }
+function successReader(entries) {
+console.log("length of entries:",entries.length);
+        var i;
+        for (i=0; i<entries.length; i++) {
+           console.log(entries[i].name);
+           if(entries[i].isDirectory==true)
+           {
+             var directoryReaderIn = entries[i].createReader();
+            directoryReaderIn.readEntries(successReader,fail); 
+
+           }
+           if(entries[i].isFile==true)
+             {
+          entries[i].file(uploadFile, fail);
+           }
+        }
+    }; 
+    function fail(error) {
+        console.log("An error has occurred: Code = " + error.code);
+    }
+
+    
+function getPath(){
+return "/sdcard/";
+//var i= str.lastIndexof('/');
+//return str.substring(0,i+1);
+}
+var media =null;
+var mediaTimer=null;
+
+function playAudio() {
+
+            var src = 'A.mp3';
+
+     if (media) {
+			media.pause();
+			document.getElementById('audio_position').innerHTML ="next";
+	    }
+       media = new Media (getPath()+src , onSuccess, onError);
+              
+     
+            media.play();
+           
+            }
+        function pauseAudio() {
+
+            if (media) {
+			    
+			 media.pause();
+			 document.getElementById('audio_position').innerHTML ="Pause";
+			 
+		    }
+        }
+
+        function stopAudio() {
+
+           
+            if (media) {
+			media.stop();
+			document.getElementById('audio_position').innerHTML ="Stop";
+	    }
+            }
+
+
+          
+          function onSuccess() {
+              media.release();
+              console.log("playAudio():Audio Success");
+          }
+
+          
+          function onError(error) {
+              alert('code: '    + error.code    + '\n' + 
+                    'message: ' + error.message + '\n');
+          }
+
+         
+          function setAudioPosition(position) {
+              document.getElementById('audio_position').innerHTML = position;
+          }
+
+
+
+var exec = require('cordova/exec');
+var splashscreen = {
+show:function() {
+exec(null, null, "SplashScreen", "show", []);
+},
+hide:function() {
+exec(null, null, "SplashScreen", "hide", []);
+}
+};
+module.exports = splashscreen;
+
+	
+        </script>
+</head>
+<body onload="onLoad()" id="div">
+<div>
+	<h1><span color="white">Music Player</span></h1>
+<p>
+<a href="#" onclick="playAudio()"><img style="width:50px;height:25px" id="play" src="/android_asset/www/img/play.png"></a>
+<a href="#" onclick="pauseAudio()"><img style="width:50px;height:25px" id="pause" src="/android_asset/www/img/pause.png"></a>
+</p>
+
+
+<p id="audio_position"></p>
+
+
+</div>
+</body>
+</html>

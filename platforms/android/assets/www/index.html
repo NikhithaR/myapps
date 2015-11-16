@@ -1,0 +1,199 @@
+
+
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>mp3 Player</title>
+		<meta charset="utf-8" />
+		<meta name="format-detection" content="telephone=no" />
+		<meta name="msapplication-tap-highlight" content="no" />
+		<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+		<link rel="stylesheet" type="text/css" href="css/index.css" />
+		<script type="text/javascript" src="cordova.js"></script>
+		<script type="text/javascript"> 
+         var i_variable_in_main=0;
+         var currentindex;
+			document.addEventListener("deviceready", onDeviceReady, false); 
+			function onDeviceReady() { 
+				window.resolveLocalFileSystemURL("file:///mnt/sdcard2/Audio/" , onResolveSuccess, fail); 
+			} 
+
+			function onResolveSuccess(fileEntry) { 
+			 	window.FS = fileEntry;
+			 	var directoryReader = fileEntry.createReader();
+			    directoryReader.readEntries(success, fail);
+			}
+			var nextSong_index=0,i;
+			var songlist=[];
+			var $ = function (selector) {
+              return document.querySelector(selector);
+              }
+
+			function success(entries) {
+			  if(entries.length > 0){
+                    for (i=0,j=0; i<entries.length; i++) {
+                		if (entries[i].name.indexOf(".mp3" || ".MP3") != -1){
+                			songlist[i] = "file:///mnt/sdcard2/Audio/"+entries[i].name;
+                		    var ul = document.getElementById("list");
+							var li = document.createElement("li");
+							li.appendChild(document.createTextNode(entries[i].name)); 
+							li.setAttribute("rel",i);
+							ul.appendChild(li);
+						   }   
+                        }
+                 
+
+				var links = $('#list').getElementsByTagName('li');
+      
+
+                for (var i = 0; i < links.length; i++) {
+                 var link = links[i];
+                 currentindex = links[i].getAttribute('rel');
+                 links[i].setAttribute("onclick", "myFunction(event)");
+               
+                }
+
+                }
+                
+			    else{
+                    isEmptyRootDir = true;
+                }
+
+			}
+            function color(i_variable) {
+            	var links = $('#list').getElementsByTagName('li');
+                for (var i = 0; i < links.length; i++) 
+                {
+                	if(i_variable!=links[i].getAttribute('rel'))
+                		links[i].className="";	
+                	else
+                		links[i].className="textColor";	
+                }
+
+            }
+
+			function myFunction(i_variable)
+			{	
+				 if(media!= null){
+            		media.stop();
+				 }
+				 var sound=songlist[i_variable.target.getAttribute("rel")];
+				 
+				 media= new Media(sound, onSuccess,onError);
+            	 media.play();
+            	 nextSong_index=i_variable.target.getAttribute("rel");
+            	 color(i_variable.target.getAttribute("rel"));
+            	 document.getElementById('audio_position').innerHTML ="Playing  "+  (sound.split('/')[6]) ;
+			}
+
+			function fail() { 
+			  	console.log("Erro ao acessar o sistema de arquivos");
+			}
+           
+            var media; 
+            var j=1;
+  
+            function play() {
+                   	console.log("Playing");
+              	if(media!= null){
+            		media.stop();
+				 }
+		        media= new Media(songlist[nextSong_index],onSuccess,onError,onStatus);
+			    media.play();
+			    color(nextSong_index);
+			    document.getElementById('audio_position').innerHTML ="Playing  "+  (songlist[nextSong_index].split('/')[6]) ;
+		    }   
+           
+            function onSuccess() {
+
+
+            }
+
+            function onStatus() {
+            	if( status==Media.MEDIA_STOPPED ) {
+                   media.play();
+                }
+            }
+            
+            function onError(error) {
+		    	console.log("Error");
+		        alert('code: '    + error.code    + '\n' + 'message: ' + error.message + '\n');
+		    }
+
+		    function pauseAudio() {
+               if (media) {
+			     media.pause();
+			     document.getElementById('audio_position').innerHTML ="Pause";
+		       }
+		    }
+
+			function stopAudio() {
+				j=0;
+                if (media) {
+                	  if(j==0)
+			           media.stop();
+			           document.getElementById('audio_position').innerHTML ="Stop";
+	            }
+            }
+          
+            function next(){
+         	   if(media){
+         		  media.stop();
+         	   }
+		        if(nextSong_index == (songlist.length - 1)){
+		 	      nextSong_index = 0;
+		        } else {
+		             nextSong_index++;	
+		          }
+		        media= new Media(songlist[nextSong_index],onSuccess,onError);
+		        media.play();
+		        color(nextSong_index);
+		        document.getElementById('audio_position').innerHTML ="Playing  "+  (songlist[nextSong_index].split('/')[6]) ;
+	    	}
+	   
+            function pre(){
+         	    if(media){
+         		  media.stop();
+         	    }
+		        if(nextSong_index == (0)){
+		 	      nextSong_index = 0;
+		        } else {
+		             nextSong_index--;	
+		          }
+		        media= new Media(songlist[nextSong_index],onSuccess,onError);
+		        media.play();
+		        color(nextSong_index);
+		        document.getElementById('audio_position').innerHTML ="Playing  "+  (songlist[nextSong_index].split('/')[6]) ;
+	    	}
+	   
+            var exec = require('cordova/exec');
+			var splashscreen = {
+				show:function() {
+				exec(null, null, "SplashScreen", "show", []);
+				},
+				hide:function() {
+				exec(null, null, "SplashScreen", "hide", []);
+				}
+			};
+			module.exports = splashscreen;
+	    </script>
+	</head>>
+                  <body>
+			         <div id="audio">
+			                <a href="#" onclick="pre();"><img style="width:60px;height:35px" src="/android_asset/www/img/pre.jpg"></a>
+                            <a href="#" onclick="play();"><img style="width:60px;height:35px"  src="/android_asset/www/img/play.png"></a>
+                            <a href="#" onclick="pauseAudio();"><img style="width:60px;height:35px"
+                            src="/android_asset/www/img/pause.png"></a>
+                            <a href="#" onclick="stopAudio();"><img style="width:60px;height:35px" src="/android_asset/www/img/stop.png"></a>
+                            <a href="#" onclick="next();"><img style="width:60px;height:35px"  src="/android_asset/www/img/next.png"></a>
+                            
+                         <p id="audio_position">
+                         	
+                         </p>
+                            <ul id="list" >
+                            </ul>
+
+                     </div>
+	              </body>
+</html>
